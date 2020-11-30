@@ -25,10 +25,21 @@ In addition, custom extension function using GO language was built to provide th
   - ....
 
 # Solution and Design Details
-Flogo Extension
-Integration Flow
-DataStream Connection
-Spotfire Analytics
+1. Flogo Extension
+
+2. Integration Flow
+The integration flow contains three key activities as depicted in the diagram:
+  1. getBusFeedMessage
+      - Call Transport for New South Wales's bus position data service.
+      - Return message containing header and an array of active buses and their real time position details in protobuf format with 64 encoding
+  2. 
+  3. 
+  
+![Integration Flow](./images/FlogoFlow.png)
+
+
+3. DataStream Connection
+4. Spotfire Analytics
 
 
 ### Installation
