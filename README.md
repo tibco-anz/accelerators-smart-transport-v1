@@ -24,6 +24,13 @@ The following products were used to build this Accelerator:
 In addition, custom extension function using GO language was built to provide the following message and data transformation features:
   - ....
 
+# Solution and Design Details
+Flogo Extension
+Integration Flow
+DataStream Connection
+Spotfire Analytics
+
+
 ### Installation
 Install Flogo extention.
 ```sh
@@ -31,7 +38,6 @@ $ ...
 ```
 
 ### Todos
-
  - Convert externsion from function to Flogo activities
  - Support different types of tfNSW message services
 

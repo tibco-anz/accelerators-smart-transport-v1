@@ -1,0 +1,39 @@
+{
+    "name": "cl_SydBusDemo_prod",
+    "description": "  ",
+    "version": "1.0.0",
+    "type": "flogo",
+    "resources": {
+        "physicalMemory": 1024,
+        "totalMemory": 4096,
+        "cpuQuota": 25
+    },
+    "endpoints": [
+        {
+            "name": "AppHealthCheck",
+            "pingable": true,
+            "protocol": "http",
+            "port": "7777",
+            "type": "private",
+            "ping": "/ping"
+        }
+    ],
+    "propertyPrefix": "TCI_FLOGO_USER_",
+    "properties": [
+        {
+            "name": "authProperty",
+            "datatype": "string",
+            "default": "Basic OmFlMmFkMTkyOWY5NGZmNTA5Mjc5NjAxMzA3MDQxMzRl"
+        },
+        {
+            "name": "authKey",
+            "datatype": "string",
+            "default": "ae2ad1929f94ff50927960130704134e"
+        },
+        {
+            "name": "tfnswAPIKey",
+            "datatype": "string",
+            "default": "rLi10wYhQBoTJeQAkLzcSqi0dOFMY4CfgM3f"
+        }
+    ]
+}
