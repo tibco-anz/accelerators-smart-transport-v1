@@ -20,36 +20,36 @@ The following products were used to build this Accelerator:
   - TIBCO Cloud Messaging eFTL (TCM)
   - TIBCO Cloud DataStream
   - TIBCO Spotfire
-  - 
 In addition, custom extension function using GO language was built to provide the following message and data transformation features:
-  - ....
 
 # Solution and Design Details
 **Flogo Extension**
+
 Flogo function tfNSW_protobuf2JSON was built using GO language as an extension to process the required message transformation and conversion and other supporting features including:
-    - Base64Encoding and decoding
-    - Convert protobuf message to JSON
-    - Tranforming and generating the output data 
-    - Providing Testmode processing and default batch size for tuning the size of the output for optimal message publishing to TCM
+  - Base64Encoding and decoding
+  - Convert protobuf message to JSON
+  - Tranforming and generating the output data 
+  - Providing Testmode processing and default batch size for tuning the size of the output for optimal message publishing to TCM
 
 Function Format:
-  tfNSW_protobuf2JSON (protobuf message (string), batch size (int), Test Mode (bool))
-  *Note: Test Mode (true) limits the maximum size of the entity which is ideal for testing a smaller subset of entity (i.e. bus) during development and testing phase.*
+  - tfNSW_protobuf2JSON (protobuf message (string), batch size (int), Test Mode (bool))
+*Note: Test Mode (true) limits the maximum size of the entity which is ideal for testing a smaller subset of entity (i.e. bus) during development and testing phase.*
 
-  For example, 
-      tfNSW_protobuf2JSON (protobuf_message, 25, false)
-  Which will process the first 25 entities of the message passed to the function.
+For example, 
+  - tfNSW_protobuf2JSON (protobuf_message, 25, false)
+Which will process the first 25 entities of the message passed to the function.
 
 **Integration Flow**
+
 The integration flow contains three key activities as depicted in the diagram:
-    1. getBusFeedMessage
-      - RESTful API call to the Transport for New South Wales's bus position data service.
-      - Returning base64 encoded message containing header and an array of active buses and their real time geo-position details in protobuf format.
-    2. ParseJSONActivity
-      - Applying the tfNSW_protobuf2JSON function to the protobuf message received from getBusFeedMessage step to generate a JSON object which contains an array of entities.
-    3. publisheFTL
-      - Creating an **iterator** by applying the JSON object from the ParseJSONActivity step.
-      - For each instance of the **iterator**, publish the message to the eFTL
+ 1. getBusFeedMessage
+   - RESTful API call to the Transport for New South Wales's bus position data service.
+   - Returning base64 encoded message containing header and an array of active buses and their real time geo-position details in protobuf format.
+ 2. ParseJSONActivity
+   - Applying the tfNSW_protobuf2JSON function to the protobuf message received from getBusFeedMessage step to generate a JSON object which contains an array of entities.
+ 3. publisheFTL
+   - Creating an **iterator** by applying the JSON object from the ParseJSONActivity step.
+   - For each instance of the **iterator**, publish the message to the eFTL
   
   
 ![Integration Flow](./images/FlogoFlow.png)
