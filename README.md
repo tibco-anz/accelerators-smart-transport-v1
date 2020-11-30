@@ -1,5 +1,5 @@
 
-TIBCO ANZ Solution Enginnering
+TIBCO ANZ Solution Engineering
 
 Date: December 2020
 
@@ -8,7 +8,7 @@ Date: December 2020
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://github.com/tibco-anz/gtfsSydBusAccelerator)
 
 # Real-Time Sydney Bus Accelerator
-Transport for NSW (tfnsw) is the government owned institution responsible for the public transport network in New South Wales including buses, trains, light rails, metro, ferries and so on. This accelerator demonstrates end-to-end real-time data integration. streaming and visual analytics features using TIBCO's Connect and Predict capabilities using ther real time GTFS feeds published from tfnsw’s data services.
+Transport for NSW (TfNSW) is the government owned institution responsible for the public transport network in New South Wales including buses, trains, light rails, metro, ferries and so on. This accelerator demonstrates end-to-end real-time data integration. streaming and visual analytics features using TIBCO's Connect and Predict capabilities using real time GTFS feeds published from TfNSW’s data services.
 
 Initial Scope:
 Using TIBCO Develop (Flogo) to extract, transform real time GTFS feeds from Transport for NSW's API data services and publish the streaming data in json format to TIBCO Cloud Messaging eFTL service (TCM).
@@ -29,7 +29,7 @@ Flogo function tfNSW_protobuf2JSON was built using GO language as an extension t
   - Base64Encoding and decoding
   - Convert protobuf message to JSON format
   - Transforming and generating the output data 
-  - Providing Test mode processing and default batch size for optimal profcessing by tuning the size of the messaging output for publishing to TCM.
+  - Providing Test mode processing and default batch size for optimal processing by tuning the size of the messaging output for publishing to TCM.
 
 Function Format:
   - tfNSW_protobuf2JSON (protobuf message (string), batch size (int), Test Mode (bool))
@@ -61,12 +61,12 @@ The integration flow contains three key activities as depicted in the diagram:
 
 
 ### Installation
-Install Flogo extention.
+Install Flogo extension.
 ...
 
 ### Todos
-    - Convert externsion from function to Flogo activities
-    - Support different types of tfNSW message services
+    - Convert extension from function to Flogo activity
+    - Support different types of TfNSW message services
 
 License
 ----
