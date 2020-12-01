@@ -43,9 +43,10 @@ Date: December 2020
 ### Configure TIBCO Cloud Messaging
 
 ### Configure TIBCO Cloud Data Streams
+</br>
 
 ##### Sign up for TIBCO Cloud Data Streams trial
-</br>
+
 
   - TIBCO Cloud Data Streams software brings the power of real-time analytics to the cloud. It is TIBCO's zero-install, browser-based, cloud-based, wizard-driven, real-time streaming business intelligence (BI) and analytics platform.
 
@@ -54,7 +55,6 @@ Date: December 2020
   - Click here for more information: https://community.tibco.com/wiki/tibco-cloud-data-streams-trial-toolkit
 
 ##### Configure Cloud Data Streams to connect to TCM - TIBCO Cloud Messaging
-</br>
 
   - Login to https://account.cloud.tibco.com/
 
