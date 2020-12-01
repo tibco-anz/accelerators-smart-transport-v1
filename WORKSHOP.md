@@ -41,7 +41,9 @@ Date: December 2020
   - Ignore the warning message and select **Done**
   
 
-#### Configure Data Stream
-
+### Configure TIBCO Cloud Data Stream
+  - TIBCO Cloud Data Streams software brings the power of real-time analytics to the cloud. It is TIBCO's zero-install, browser-based, cloud-based, wizard-driven, real-time streaming business intelligence (BI) and analytics platform. 
+  - You can try out the TIBCO Cloud Streaming Analytics platform for free for 30 days. This will include access to a TIBCO Cloud Spotfire trial so that you can fully experience the streaming 
+  
 #### Configure Spotfire
 
