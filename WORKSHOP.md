@@ -7,11 +7,25 @@ Date: December 2020
 
 
 ## Installation and configuration
-Install Flogo extension
+#### Download this github respository to your local file system
 
-Import Flogo flow
+#### Install Flogo extension
+  - Login to TIBCO Cloud (https://cloud.tibco.com/) (sign up trial option is also avaialble)
+  - In the capabilities page, Select **Integration**
+  - Select **Integration Apps**. 
+  - You are now in TIBCO Integration Integration
+  - Select menu items **Environment & Tools**
+  - Under Connector Management & Extensions section, Select **Extensions** 
+  - Under Extensions, Select the orange **Upload** button
+  - In the dialog box, default should be "From Git Repository". 
+  - In **Git repository URL
+** , enter https://github.com/tibco-anz/gtfsSydBusAccelerator/edit/main/resources/TCI-flogo/cl_util.zip and select **Import** button
+  - Click the **Done** button to complete import.
+  
 
-Configure Data Stream
+#### Import Flogo flow
 
-Configure Spotfire
+#### Configure Data Stream
+
+#### Configure Spotfire
 
