@@ -28,7 +28,8 @@ The following products were used to build this Accelerator:
 Flogo function tfNSW_protobuf2JSON was built using GO language as an extension to process the required message transformation and conversion and other supporting features including:
   - Base64Encoding and decoding
   - Convert protobuf message to JSON format
-  - Transforming and generating the output data 
+  - Transforming and generating the output data
+  - Data cleansing and exception handling for bad data 
   - Providing Test mode processing and default batch size for optimal processing by tuning the size of the messaging output for publishing to TCM.
 
 Function Format:
@@ -60,15 +61,10 @@ The integration flow contains three key activities as depicted in the diagram:
 **Spotfire Analytics**
 
 
-### Installation
-Install Flogo extension.
-...
-
 ### Todos
     - Convert extension from function to Flogo activity
     - Support different types of TfNSW message services
 
 License
 ----
-
 MIT
