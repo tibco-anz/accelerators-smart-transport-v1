@@ -63,16 +63,25 @@ Date: December 2020
   <img src="./images/TCDS_Region.png">
 
   - Click on **Analytics**
-  
+
   <img src="./images/TCDS_Home.png">
+
   - Click on **Data Streams**
+
   <img src="./images/TCDS_CloudDataStreams.png" width="500">
+
   - This is the Cloud Data Streams home page. Since we are creating a new connection to TIBCO Cloud Messaging, click on **Create new**
+
   <img src="./images/TCDS_CreateNew.png" width="300">
+
   - TIBCO Cloud Data Streams supports connecting to open source messaging frameworks like Kafka and MQTT. For this demo, we are going to use TIBCO Cloud Messaging as our streaming data source. Click on **TIBCO Cloud Messaging** and **continue**.
+
   <img src="./images/TCDS_Sources.png">
+
   - The wizard will automatically discover TCM channels that are running within the same region of your TIBCO Cloud account. If TIBCO Cloud Messaging is running in a different region then you need to click **other channel** and fill in the TCM **channel URL** and **authentication key** that is provided during the configuration of TCM.
+
   <img src="./images/TCDS_SourcesConfiguration.png">
+  
   - Here we can leave the content mat
 
 
