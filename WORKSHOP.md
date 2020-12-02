@@ -59,8 +59,11 @@ Date: December 2020
   - Login to https://account.cloud.tibco.com/
 
   - Select the Oregon Region
+
   <img src="./images/TCDS_Region.png">
+
   - Click on **Analytics**
+  
   <img src="./images/TCDS_Home.png">
   - Click on **Data Streams**
   <img src="./images/TCDS_CloudDataStreams.png" width="500">
