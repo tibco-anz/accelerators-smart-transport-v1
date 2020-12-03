@@ -74,16 +74,34 @@ Date: December 2020
 
   <img src="./images/TCDS_CreateNew.png" width="300">
 
-  - TIBCO Cloud Data Streams supports connecting to open source messaging frameworks like Kafka and MQTT. For this demo, we are going to use TIBCO Cloud Messaging as our streaming data source. Click on **TIBCO Cloud Messaging** and **continue**.
+  - TIBCO Cloud Data Streams supports connecting to open source messaging frameworks like Kafka and MQTT. For this demo, we are going to use TIBCO Cloud Messaging as our streaming data source. Click on **TIBCO Cloud Messaging** and **Continue**.
 
   <img src="./images/TCDS_Sources.png">
 
-  - The wizard will automatically discover TCM channels that are running within the same region of your TIBCO Cloud account. If TIBCO Cloud Messaging is running in a different region then you need to click **other channel** and fill in the TCM **channel URL** and **authentication key** that is provided during the configuration of TCM.
+  - The wizard will automatically discover TCM channels that are running within the same region of your TIBCO Cloud account. If TIBCO Cloud Messaging is running in a different region then you need to click **other channel** and fill in the TCM **channel URL** and **authentication key** that is provided during the configuration of TCM. Click **Continue**.
 
   <img src="./images/TCDS_SourcesConfiguration.png">
-  
-  - Here we can leave the content mat
 
+  - Here we can leave the content matcher to the default. This setting is only required if you are sending multiple different types of messages in TCM. Click **Continue**.
 
+  <img src="./images/TCDS_ContentMatcher.png">
+
+  - Cloud Data Streams will automatically detect the schema of the messages sent by TCI.
+
+  <img src="./images/TCDS_DiscoverSchema.png">
+
+  - We only need to show in Spotfire the latest relevant data for the buses. Select **Latest** as the data stream type and set **trip_id** as the primary key. Click **Continue**.
+
+  <img src="./images/TCDS_Schema.png">
+
+  - Now specify the **data stream name** and **password**. You will need this password when establishing a connection from TIBCO Cloud Spotfire. Click **Continue**.
+
+  <img src="./images/TCDS_UsernamePassword.png">
+
+  - Finally this will lead us to the summary page. Click **Finish**.
+
+  <img src="./images/TCDS_Summary.png">
 
 ### Configure TIBCO Cloud Spotfire
+
+  - Download [Spotfire Cloud Analyst](http://mkto-sj140009.com/yHvBFVqw0V0OQCx1EH00100). Login using your TIBCO Cloud account when required.
