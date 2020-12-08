@@ -23,7 +23,7 @@ The following products were used to build this Accelerator:
   - In addition, custom extension based on open source platform (GO) was built to provide message conversion, transformation and other supporting features.
 
 # Solution and Design Details
-**Flogo Extension(using open source)**
+## Flogo Extension(using open source)
 
 Flogo function GTFSAdapter was built using GO language as an extension to process the required message covnersion, transformation and other supporting features including:
   - Base64 encoding and decoding
@@ -68,7 +68,7 @@ The total number of entities will be returned in the Json string by the function
 Which will process the first 25 entities of the message without transformation and return the Json string output.
 
 
-**Integration Flow**
+## Integration Flow
 
 The integration flow contains three key activities as depicted in the diagram:
  1. getBusFeedMessage
@@ -84,9 +84,9 @@ The integration flow contains three key activities as depicted in the diagram:
 ![Integration Flow](./images/FlogoFlow.png)
 
 
-**DataStream Connection**
+## Data Stream Connection
 
-**Spotfire Analytics**
+## Spotfire Analytics
 
 
 ### Todos
