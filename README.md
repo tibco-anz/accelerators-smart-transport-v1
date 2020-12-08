@@ -61,7 +61,10 @@ The total number of entities will be returned in the Json string by the function
   - When true, the Json output will contain the transformed entities (currently the transformation structure is hard coded)
   - When false, the Json output will contain the orginal structure of the entities
 
-****For example,****
+
+![Transformed vs Orginal Json Output](./images/TCI_TransfromVsOriginal.png)
+
+****For Example,****
 
   - GTSFSAdapter(Protobuf_message, 25, false)
 
