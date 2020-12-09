@@ -3,7 +3,6 @@
         "github.com/project-flogo/flow",
         "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/rest",
         "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/parsejson",
-        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/httpresponse",
         "github.com/project-flogo/contrib/activity/actreturn",
         "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/log",
         "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/trigger/timer",
@@ -28,7 +27,7 @@
                     "settings": {
                         "Repeating": true,
                         "Start Date": "",
-                        "Time Interval": 10,
+                        "Time Interval": 15,
                         "Interval Unit": "Second"
                     },
                     "action": {
@@ -71,12 +70,6 @@
                     {
                         "id": 3,
                         "from": "publisheFTL",
-                        "to": "ConfigureHTTPResponse",
-                        "type": "default"
-                    },
-                    {
-                        "id": 4,
-                        "from": "ConfigureHTTPResponse",
                         "to": "Return",
                         "type": "default"
                     }
@@ -149,7 +142,7 @@
                             "ref": "#parsejson",
                             "input": {
                                 "validate": false,
-                                "jsonString": "=string.base64ToString(cl_utils.tfNSW_protobuf2JSON($activity[getBusFeedMessage].responseBody.data,50,false))"
+                                "jsonString": "=string.base64ToString(cl_utils.GTFSAdapter($activity[getBusFeedMessage].responseBody.data, 0, true))"
                             },
                             "schemas": {
                                 "output": {
@@ -191,7 +184,7 @@
                                         "Authorization": "=string.concat(\"Basic \", string.stringToBase64(string.concat(\":\",$property[\"authKey\"])))"
                                     }
                                 },
-                                "body": "=$activity[ParseJSONActivity].jsonObject.respMsg[$iteration[index]]"
+                                "body": "=$iteration[value]"
                             },
                             "output": {
                                 "configureResponseCodes": false,
@@ -217,34 +210,6 @@
                         }
                     },
                     {
-                        "id": "ConfigureHTTPResponse",
-                        "name": "ConfigureHTTPResponse",
-                        "description": "Configure HTTP Response Activity",
-                        "activity": {
-                            "ref": "#httpresponse",
-                            "input": {
-                                "trigger": "",
-                                "responsecode": "200"
-                            },
-                            "schemas": {
-                                "input": {
-                                    "input": {
-                                        "type": "json",
-                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"string\"}}}",
-                                        "fe_metadata": "{\"body\":\"\"}"
-                                    }
-                                },
-                                "output": {
-                                    "response": {
-                                        "type": "json",
-                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"string\"}}}",
-                                        "fe_metadata": "{\"body\":\"\"}"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    {
                         "id": "Return",
                         "name": "Return",
                         "description": "Simple Return Activity",
@@ -252,8 +217,7 @@
                             "ref": "#actreturn",
                             "settings": {
                                 "mappings": {
-                                    "code": "=$activity[ConfigureHTTPResponse].code",
-                                    "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                                    "code": "=$activity[publisheFTL].statusCode"
                                 }
                             }
                         }
@@ -351,5 +315,5 @@
     },
     "connections": {},
     "contrib": "W3sicmVmIjoiZ2l0LnRpYmNvLmNvbS9naXQvcHJvZHVjdC9pcGFhcy93aS1jb250cmliLmdpdC9jb250cmlidXRpb25zL0dlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCJ9LHsicmVmIjoiZ2l0aHViLmNvbS9jbGF3LmFpL2Zsb2dvLWNvbXBvbmVudHMvZnVuY3Rpb24vY2xfdXRpbHMiLCJzM2xvY2F0aW9uIjoic3RyNHVjY2puZzI1b2htb2Q0dmJvMnZyanNheWphNDUvY2xfdXRpbHMifV0=",
-    "fe_metadata": "UEsDBAoAAAAIAD0/flGrqSRGFQAAABMAAAAIAAAAYXBwLmpzb26rViopykxPTy1yy8kvL1ayio6tBQBQSwECFAAKAAAACAA9P35Rq6kkRhUAAAATAAAACAAAAAAAAAAAAAAAAAAAAAAAYXBwLmpzb25QSwUGAAAAAAEAAQA2AAAAOwAAAAAA"
+    "fe_metadata": "UEsDBAoAAAAIACRTiFGrqSRGFQAAABMAAAAIAAAAYXBwLmpzb26rViopykxPTy1yy8kvL1ayio6tBQBQSwECFAAKAAAACAAkU4hRq6kkRhUAAAATAAAACAAAAAAAAAAAAAAAAAAAAAAAYXBwLmpzb25QSwUGAAAAAAEAAQA2AAAAOwAAAAAA"
 }
