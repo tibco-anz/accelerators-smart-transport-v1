@@ -23,9 +23,21 @@ The following products were used to build this Accelerator:
   - In addition, custom extension based on open source platform (GO) was built to provide message conversion, transformation and other supporting features.
 
 # Solution and Design Details
+
+## Overview
+Getting the real time GTFS data and converting them to streaming messages published to TCM eFTL are managed by TCI Develop flows.
+The solution consists of utilising the following components:
+
+  - Custom extension using open source to covert protobuf to Json format
+  - Reusable integration apps using Cloud Mesh
+    - Publish to eFTL app - Exposed via Cloud Mesh to publish a streaming message to TCM eFTL server
+    - Run GTFS app - Exposed via Cloud Mesh to get GTFS feed from TfNSW's Open Data service and run the required tasks to convert, transform and split the GTFS feed to individual streaming message for each entity contained in the feed. Each message will be published to TCM eFTL
+    - Sydney Bus Demo Control app - Consists of all the supporting flows to control running the Run GTFS app, fix failed process and archive control table logs.
+    
+    
 ## Flogo Extension(using open source)
 
-Flogo function GTFSAdapter was built using GO language as an extension to process the required message covnersion, transformation and other supporting features including:
+Flogo function GTFSAdapter was built using GO language as an extension to process the required message conversion, transformation and other supporting features including:
   - Base64 encoding and decoding
   - Converting protobuf message to JSON format
   - Transforming and generating the output data
@@ -34,7 +46,7 @@ Flogo function GTFSAdapter was built using GO language as an extension to proces
 
 ***Function Description:***
 
-Custom extension function to convert GTFS transport protobuf message to Json format containing an array of entities only (without the header).
+Custom extension function to convert GTFS transport protobuf message to Json format containing an array of GTFS entities only without the header.
 
 ****Usage:****
 
@@ -58,7 +70,7 @@ The total number of entities will be returned in the Json string by the function
 
 3). Transform
 
-  - When true, the Json output will contain the transformed entities (currently the transformation structure is hard coded)
+  - When true, the Json output will contain the transformed entities (currently the transformation output structure is hard-coded)
   - When false, the Json output will contain the orginal structure of the entities
 
 
