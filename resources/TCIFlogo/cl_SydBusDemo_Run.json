@@ -1,0 +1,1144 @@
+{
+    "imports": [
+        "github.com/project-flogo/flow",
+        "git.tibco.com/git/product/ipaas/wi-mysql.git/src/app/MySQL/activity/query",
+        "github.com/project-flogo/contrib/activity/actreturn",
+        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/mapper",
+        "git.tibco.com/git/product/ipaas/wi-mysql.git/src/app/MySQL/activity/insert",
+        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/rest",
+        "git.tibco.com/git/product/ipaas/wi-mysql.git/src/app/MySQL/activity/update",
+        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/log",
+        "git.tibco.com/git/product/ipaas/wi-mysql.git/src/app/MySQL/activity/delete",
+        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/trigger/timer",
+        "github.com/project-flogo/contrib/function/utils",
+        "github.com/project-flogo/contrib/function/array",
+        "github.com/project-flogo/contrib/function/string",
+        "github.com/project-flogo/contrib/function/datetime",
+        "git.tibco.com/git/product/ipaas/wi-mysql.git/src/app/MySQL/connector/connection"
+    ],
+    "name": "cl_SydBusDemo_Run",
+    "description": "  ",
+    "version": "1.0.0",
+    "type": "flogo:app",
+    "appModel": "1.1.1",
+    "triggers": [
+        {
+            "ref": "#timer",
+            "name": "tibco-wi-timer",
+            "description": "Simple Timer trigger",
+            "settings": {},
+            "id": "TimerTrigger",
+            "handlers": [
+                {
+                    "description": "",
+                    "settings": {
+                        "Repeating": true,
+                        "Start Date": "",
+                        "Time Interval": 15,
+                        "Interval Unit": "Second"
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:Main_Start"
+                        },
+                        "input": {
+                            "queryParams": {
+                                "mapping": {
+                                    "debug": "false"
+                                }
+                            }
+                        }
+                    },
+                    "name": "Main_Start"
+                },
+                {
+                    "description": "",
+                    "settings": {
+                        "Repeating": true,
+                        "Start Date": "",
+                        "Time Interval": 5,
+                        "Interval Unit": "Minute"
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:AutoFixFailedProcess"
+                        },
+                        "input": {
+                            "queryParams": {
+                                "mapping": {
+                                    "debug": "false"
+                                }
+                            }
+                        }
+                    },
+                    "name": "AutoFixFailedProcess"
+                },
+                {
+                    "description": "",
+                    "settings": {
+                        "Repeating": true,
+                        "Start Date": "",
+                        "Time Interval": 1,
+                        "Interval Unit": "Day"
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:AutoArchiveControlTable"
+                        },
+                        "input": {
+                            "queryParams": {
+                                "mapping": {
+                                    "debug": "false"
+                                }
+                            }
+                        }
+                    },
+                    "name": "AutoArchiveControlTable"
+                }
+            ]
+        }
+    ],
+    "resources": [
+        {
+            "id": "flow:Main_Start",
+            "data": {
+                "name": "Main_Start",
+                "description": "",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "CheckPreviousJobStatus",
+                        "to": "Return_Skipped",
+                        "type": "default"
+                    },
+                    {
+                        "id": 2,
+                        "from": "CheckPreviousJobStatus",
+                        "to": "GetUUID",
+                        "type": "expression",
+                        "label": "ReadyToProceed",
+                        "value": "array.count($activity[CheckPreviousJobStatus].Output.records)==1 && string.equals($activity[CheckPreviousJobStatus].Output.records[0].Status, \"Completed\")"
+                    },
+                    {
+                        "id": 3,
+                        "from": "GetUUID",
+                        "to": "InsertNewJob",
+                        "type": "default"
+                    },
+                    {
+                        "id": 4,
+                        "from": "InsertNewJob",
+                        "to": "RunGTFSJob",
+                        "type": "default"
+                    },
+                    {
+                        "id": 5,
+                        "from": "RunGTFSJob",
+                        "to": "UpdateJobStatus",
+                        "type": "default"
+                    },
+                    {
+                        "id": 6,
+                        "from": "UpdateJobStatus",
+                        "to": "Return_Completed",
+                        "type": "default"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "CheckPreviousJobStatus",
+                        "name": "CheckPreviousJobStatus",
+                        "description": "This activity executes query on a MySQL database",
+                        "activity": {
+                            "ref": "#query",
+                            "input": {
+                                "Connection": "conn://df065000-3a11-11eb-b57e-6f1551e16cc8",
+                                "QueryName": "",
+                                "Query": "SELECT ReferenceID, JobDate, BatchId, Status FROM GTFSBusPosCtrl ORDER BY JobDate DESC, BatchId DESC LIMIT 1;",
+                                "manualmode": false,
+                                "Fields": [
+                                    {
+                                        "FieldName": "ReferenceID",
+                                        "Type": "VARCHAR",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "JobDate",
+                                        "Type": "TIMESTAMP",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "BatchId",
+                                        "Type": "BIGINT",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "Status",
+                                        "Type": "VARCHAR",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    }
+                                ],
+                                "State": "b8ce6f7c-8cf7-41ee-a535-907b574ae734SELECT ReferenceID, JobDate, BatchId, Status FROM GTFSBusPosCtrl ORDER BY JobDate DESC, BatchId DESC LIMIT 1;"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "Output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"},\"JobDate\":{\"type\":\"string\",\"format\":\"time\"},\"BatchId\":{\"type\":\"integer\"},\"Status\":{\"type\":\"string\"}}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"},\"JobDate\":{\"type\":\"string\",\"format\":\"time\"},\"BatchId\":{\"type\":\"integer\"},\"Status\":{\"type\":\"string\"}}}}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return_Skipped",
+                        "name": "Return_Skipped",
+                        "description": "Simple Return Activity",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 201,
+                                    "responseBody": {
+                                        "mapping": {
+                                            "body": "*** Skip ***"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "GetUUID",
+                        "name": "GetUUID",
+                        "description": "Mapper Activity",
+                        "activity": {
+                            "ref": "#mapper",
+                            "input": {
+                                "input": {
+                                    "mapping": {
+                                        "ReferenceID": "=utils.uuid()"
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\n    \"ReferenceID\":\"\"\n}"
+                                    }
+                                },
+                                "output": {
+                                    "output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\n  \"ReferenceID\": \"\"\n}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "InsertNewJob",
+                        "name": "InsertNewJob",
+                        "description": "This activity executes insert on a MySQL database",
+                        "activity": {
+                            "ref": "#insert",
+                            "input": {
+                                "Connection": "conn://df065000-3a11-11eb-b57e-6f1551e16cc8",
+                                "InsertStatement": "INSERT INTO GTFSBusPosCtrl (ReferenceID, JobDate, Status) values (?ReferenceID, ?JobDate, ?Status);",
+                                "manualmode": false,
+                                "Fields": [
+                                    {
+                                        "FieldName": "ReferenceID",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false,
+                                        "Value": true
+                                    },
+                                    {
+                                        "FieldName": "JobDate",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false,
+                                        "Value": true
+                                    },
+                                    {
+                                        "FieldName": "Status",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false,
+                                        "Value": true
+                                    }
+                                ],
+                                "State": "77f76399-39f0-4909-ae05-ffc5b26ba5a7INSERT INTO GTFSBusPosCtrl (ReferenceID, JobDate, Status) values (?ReferenceID, ?JobDate, ?Status);",
+                                "input": {
+                                    "mapping": {
+                                        "values": [
+                                            {
+                                                "JobDate": "=datetime.currentDatetime()",
+                                                "Status": "Started",
+                                                "ReferenceID": "=$activity[GetUUID].output.ReferenceID"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"},\"JobDate\":{\"type\":\"string\"},\"Status\":{\"type\":\"string\"}}}},\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"},\"JobDate\":{\"type\":\"string\"},\"Status\":{\"type\":\"string\"}}}},\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "Output": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"},\"lastInsertId\":{\"type\":\"int\"}}}",
+                                        "fe_metadata": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"},\"lastInsertId\":{\"type\":\"int\"}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "RunGTFSJob",
+                        "name": "RunGTFSJob",
+                        "description": "Simple REST Activity",
+                        "settings": {
+                            "retryOnError": {
+                                "count": 0,
+                                "interval": 0
+                            }
+                        },
+                        "activity": {
+                            "ref": "#rest",
+                            "input": {
+                                "enableASR": true,
+                                "swagger": "",
+                                "serviceName": "tciau-a3F3MmlmNmxsd2dnYnFiamJxa2tkZGtqc3hzcW8yYjI",
+                                "resourcePath": "/runGTFSBus_default",
+                                "Method": "GET",
+                                "Uri": "/gsbc/TIB_SUB_01BB7E96Z09T7KGSREN16KGPXC/tci/kqw2if6llwggbqbjbqkkddkjsxsqo2b2",
+                                "Timeout": 0,
+                                "requestType": "application/json",
+                                "Use certificate for verification": false,
+                                "Server Certificate": "",
+                                "proxy": "",
+                                "host": ""
+                            },
+                            "output": {
+                                "configureResponseCodes": true,
+                                "responseType": "application/json"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "serviceMetadata": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"serviceId\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"swaggerChecksum\":{\"type\":\"string\"},\"extAuthz\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"assurance\":{\"type\":\"string\"},\"baseURL\":{\"type\":\"string\"},\"path\":{\"type\":\"string\"},\"apiSpec\":{\"type\":\"object\",\"properties\":{\"definitions\":{\"type\":\"object\",\"properties\":{\"schema1\":{\"type\":\"object\",\"properties\":{\"properties\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"object\",\"properties\":{\"required\":{\"type\":\"boolean\"},\"type\":{\"type\":\"string\"}}},\"responseBody\":{\"type\":\"object\",\"properties\":{\"properties\":{\"type\":\"object\",\"properties\":{\"batchSize\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"body\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"headers\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}}}},\"type\":{\"type\":\"string\"}}}}},\"required\":{\"type\":\"array\",\"items\":{}},\"title\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}}}}},\"info\":{\"type\":\"object\",\"properties\":{\"description\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"version\":{\"type\":\"string\"}}},\"paths\":{\"type\":\"object\",\"properties\":{\"/runGTFSBus\":{\"type\":\"object\",\"properties\":{\"get\":{\"type\":\"object\",\"properties\":{\"operationId\":{\"type\":\"string\"},\"parameters\":{\"type\":\"array\",\"items\":{}},\"responses\":{\"type\":\"object\",\"properties\":{\"200\":{\"type\":\"object\",\"properties\":{\"description\":{\"type\":\"string\"},\"schema\":{\"type\":\"object\",\"properties\":{\"properties\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"object\",\"properties\":{\"required\":{\"type\":\"boolean\"},\"type\":{\"type\":\"string\"}}},\"responseBody\":{\"type\":\"object\",\"properties\":{\"properties\":{\"type\":\"object\",\"properties\":{\"batchSize\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"body\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"headers\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}}}},\"type\":{\"type\":\"string\"}}}}},\"required\":{\"type\":\"array\",\"items\":{}},\"title\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}}}}}}},\"summary\":{\"type\":\"string\"}}}}},\"/runGTFSBus_default\":{\"type\":\"object\",\"properties\":{\"get\":{\"type\":\"object\",\"properties\":{\"operationId\":{\"type\":\"string\"},\"parameters\":{\"type\":\"array\",\"items\":{}},\"responses\":{\"type\":\"object\",\"properties\":{\"200\":{\"type\":\"object\",\"properties\":{\"description\":{\"type\":\"string\"},\"schema\":{\"type\":\"object\",\"properties\":{\"properties\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"object\",\"properties\":{\"required\":{\"type\":\"boolean\"},\"type\":{\"type\":\"string\"}}},\"responseBody\":{\"type\":\"object\",\"properties\":{\"properties\":{\"type\":\"object\",\"properties\":{\"batchSize\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"body\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}},\"headers\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\"}}}}},\"type\":{\"type\":\"string\"}}}}},\"required\":{\"type\":\"array\",\"items\":{}},\"title\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}}}}}}},\"summary\":{\"type\":\"string\"}}}}}}},\"swagger\":{\"type\":\"string\"},\"host\":{\"type\":\"string\"},\"schemes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"basePath\":{\"type\":\"string\"}}},\"intercom\":{\"type\":\"boolean\"},\"intercomRegion\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"serviceId\":\"tciau-a3F3MmlmNmxsd2dnYnFiamJxa2tkZGtqc3hzcW8yYjI\",\"title\":\"cl_SydBusDemo_PublishGTFS\",\"description\":\" \",\"swaggerChecksum\":\"34f40f6ed5597c0315aa7210a3120ae2426ef679c4deb6d08438f967b79bc9ec\",\"extAuthz\":[\"tenant-basic\"],\"assurance\":\"draft\",\"baseURL\":\"https://ap-southeast-2.integration.cloud.tibcoapps.com\",\"path\":\"/gsbc/TIB_SUB_01BB7E96Z09T7KGSREN16KGPXC/tci/kqw2if6llwggbqbjbqkkddkjsxsqo2b2\",\"apiSpec\":{\"definitions\":{\"schema1\":{\"properties\":{\"code\":{\"required\":false,\"type\":\"integer\"},\"responseBody\":{\"properties\":{\"batchSize\":{\"type\":\"integer\"},\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}},\"type\":\"object\"}},\"required\":[],\"title\":\"Inputs\",\"type\":\"object\"}},\"info\":{\"description\":\" \",\"title\":\"cl_SydBusDemo_PublishGTFS\",\"version\":\"1.0.0\"},\"paths\":{\"/runGTFSBus\":{\"get\":{\"operationId\":\"get_runGTFSBus\",\"parameters\":[],\"responses\":{\"200\":{\"description\":\"Rest Response\",\"schema\":{\"properties\":{\"code\":{\"required\":false,\"type\":\"integer\"},\"responseBody\":{\"properties\":{\"batchSize\":{\"type\":\"integer\"},\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}},\"type\":\"object\"}},\"required\":[],\"title\":\"Inputs\",\"type\":\"object\"}}},\"summary\":\"WithCustomTranformPublishGTFS2eFTL\"}},\"/runGTFSBus_default\":{\"get\":{\"operationId\":\"get_runGTFSBus_default\",\"parameters\":[],\"responses\":{\"200\":{\"description\":\"Rest Response\",\"schema\":{\"properties\":{\"code\":{\"required\":false,\"type\":\"integer\"},\"responseBody\":{\"properties\":{\"batchSize\":{\"type\":\"integer\"},\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}},\"type\":\"object\"}},\"required\":[],\"title\":\"Inputs\",\"type\":\"object\"}}},\"summary\":\"DefaultPublishGTFS2eFTL\"}}},\"swagger\":\"2.0\",\"host\":\"ap-southeast-2.integration.cloud.tibcoapps.com\",\"schemes\":[\"https\"],\"basePath\":\"/gsbc/TIB_SUB_01BB7E96Z09T7KGSREN16KGPXC/tci/kqw2if6llwggbqbjbqkkddkjsxsqo2b2\"},\"intercom\":true,\"intercomRegion\":\"ap-southeast-2\"}"
+                                    },
+                                    "queryParams": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{}}",
+                                        "fe_metadata": "[]"
+                                    },
+                                    "pathParams": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{}}",
+                                        "fe_metadata": "[]"
+                                    },
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{}}",
+                                        "fe_metadata": "[]"
+                                    }
+                                },
+                                "output": {
+                                    "responseCodes": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"200\":{\"properties\":{\"code\":{\"required\":false,\"type\":\"integer\"},\"responseBody\":{\"properties\":{\"batchSize\":{\"type\":\"integer\"},\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}},\"type\":\"object\"}},\"required\":[],\"title\":\"Inputs\",\"type\":\"object\"}}}",
+                                        "fe_metadata": "{\"type\":\"object\",\"properties\":{\"200\":{\"properties\":{\"code\":{\"required\":false,\"type\":\"integer\"},\"responseBody\":{\"properties\":{\"batchSize\":{\"type\":\"integer\"},\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}},\"type\":\"object\"}},\"required\":[],\"title\":\"Inputs\",\"type\":\"object\"}}}"
+                                    },
+                                    "responseCodesSchema": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}}}}",
+                                        "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"properties\\\":{\\\"code\\\":{\\\"required\\\":false,\\\"type\\\":\\\"integer\\\"},\\\"responseBody\\\":{\\\"properties\\\":{\\\"batchSize\\\":{\\\"type\\\":\\\"integer\\\"},\\\"body\\\":{\\\"type\\\":\\\"any\\\"},\\\"headers\\\":{\\\"type\\\":\\\"object\\\"}},\\\"type\\\":\\\"object\\\"}},\\\"required\\\":[],\\\"title\\\":\\\"Inputs\\\",\\\"type\\\":\\\"object\\\"}\"}]"
+                                    },
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "UpdateJobStatus",
+                        "name": "UpdateJobStatus",
+                        "description": "This activity executes update on a MySQL database",
+                        "activity": {
+                            "ref": "#update",
+                            "input": {
+                                "Connection": "conn://df065000-3a11-11eb-b57e-6f1551e16cc8",
+                                "UpdateStatement": "Update GTFSBusPosCtrl SET Status=\"Completed\", BatchId=?BatchSize Where ReferenceID=?ReferenceID;",
+                                "manualmode": false,
+                                "Fields": [
+                                    {
+                                        "FieldName": "BatchSize",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "ReferenceID",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false
+                                    }
+                                ],
+                                "State": "c34f1dcd-861f-4854-ab67-da7df40129a0Update GTFSBusPosCtrl SET Status=\"Completed\", BatchId=?BatchSize Where ReferenceID=?ReferenceID;",
+                                "input": {
+                                    "mapping": {
+                                        "parameters": {
+                                            "ReferenceID": "=$activity[GetUUID].output.ReferenceID",
+                                            "BatchSize": "=string.tostring($activity[RunGTFSJob].responseCodes[\"200\"].responseBody.batchSize)"
+                                        }
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"BatchSize\":{\"type\":\"string\"},\"ReferenceID\":{\"type\":\"string\"}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"BatchSize\":{\"type\":\"string\"},\"ReferenceID\":{\"type\":\"string\"}}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "Output": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"}}}",
+                                        "fe_metadata": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return_Completed",
+                        "name": "Return_Completed",
+                        "description": "Simple Return Activity",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 200,
+                                    "responseBody": {
+                                        "mapping": {
+                                            "body": "Processed Successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "errorHandler": {
+                    "tasks": [
+                        {
+                            "id": "LogMessage",
+                            "name": "LogMessage",
+                            "description": "Simple Log Message Activity",
+                            "activity": {
+                                "ref": "#log",
+                                "input": {
+                                    "Log Level": "INFO",
+                                    "flowInfo": false,
+                                    "message": "=$error.message"
+                                }
+                            }
+                        }
+                    ],
+                    "links": []
+                },
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "queryParams",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"debug\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "code",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "responseBody",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"queryParams\":{\"type\":\"object\",\"properties\":{\"debug\":{\"type\":\"string\"}},\"required\":[]}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\",\"required\":false},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}},\"required\":[]}"
+                    }
+                }
+            }
+        },
+        {
+            "id": "flow:AutoFixFailedProcess",
+            "data": {
+                "name": "AutoFixFailedProcess",
+                "description": "",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "CheckFailedProcess",
+                        "to": "Return_Skipped",
+                        "type": "default"
+                    },
+                    {
+                        "id": 2,
+                        "from": "CheckFailedProcess",
+                        "to": "GetUUID",
+                        "type": "expression",
+                        "label": "ReadyToProceed",
+                        "value": "array.count($activity[CheckFailedProcess].Output.records)==1"
+                    },
+                    {
+                        "id": 3,
+                        "from": "GetUUID",
+                        "to": "UpdateJobStatus",
+                        "type": "default"
+                    },
+                    {
+                        "id": 4,
+                        "from": "UpdateJobStatus",
+                        "to": "Return_Completed",
+                        "type": "default"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "CheckFailedProcess",
+                        "name": "CheckFailedProcess",
+                        "description": "This activity executes query on a MySQL database",
+                        "activity": {
+                            "ref": "#query",
+                            "input": {
+                                "Connection": "conn://df065000-3a11-11eb-b57e-6f1551e16cc8",
+                                "QueryName": "",
+                                "Query": "SELECT ReferenceID, JobDate, BatchId, Status FROM GTFSBusPosCtrl WHERE JobDate < now()-?secsToFixProcess and Status = \"Started\" ORDER BY JobDate DESC LIMIT 1;",
+                                "manualmode": false,
+                                "Fields": [
+                                    {
+                                        "FieldName": "secsToFixProcess",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "ReferenceID",
+                                        "Type": "VARCHAR",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "JobDate",
+                                        "Type": "TIMESTAMP",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "BatchId",
+                                        "Type": "BIGINT",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "Status",
+                                        "Type": "VARCHAR",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    }
+                                ],
+                                "State": "b03fb2db-0b6d-4a99-8c8a-eb582939a4deSELECT ReferenceID, JobDate, BatchId, Status FROM GTFSBusPosCtrl WHERE JobDate < now()-?secsToFixProcess and Status = \"Started\" ORDER BY JobDate DESC LIMIT 1;",
+                                "input": {
+                                    "mapping": {
+                                        "parameters": {
+                                            "secsToFixProcess": "=$property[\"secsToFixProcess\"]"
+                                        }
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"secsToFixProcess\":{\"type\":\"string\"}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"secsToFixProcess\":{\"type\":\"string\"}}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "Output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"},\"JobDate\":{\"type\":\"string\",\"format\":\"time\"},\"BatchId\":{\"type\":\"integer\"},\"Status\":{\"type\":\"string\"}}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"},\"JobDate\":{\"type\":\"string\",\"format\":\"time\"},\"BatchId\":{\"type\":\"integer\"},\"Status\":{\"type\":\"string\"}}}}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return_Skipped",
+                        "name": "Return_Skipped",
+                        "description": "Simple Return Activity",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 201,
+                                    "responseBody": {
+                                        "mapping": {
+                                            "body": "*** Skip ***"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "GetUUID",
+                        "name": "GetUUID",
+                        "description": "Mapper Activity",
+                        "activity": {
+                            "ref": "#mapper",
+                            "input": {
+                                "input": {
+                                    "mapping": {
+                                        "ReferenceID": "=$activity[CheckFailedProcess].Output.records[0].ReferenceID"
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\n    \"ReferenceID\":\"\"\n}"
+                                    }
+                                },
+                                "output": {
+                                    "output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"ReferenceID\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\n  \"ReferenceID\": \"\"\n}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "UpdateJobStatus",
+                        "name": "UpdateJobStatus",
+                        "description": "This activity executes update on a MySQL database",
+                        "activity": {
+                            "ref": "#update",
+                            "input": {
+                                "Connection": "conn://df065000-3a11-11eb-b57e-6f1551e16cc8",
+                                "UpdateStatement": "Update GTFSBusPosCtrl SET Status=\"Completed\", BatchId=?BatchSize Where ReferenceID=?ReferenceID;",
+                                "manualmode": false,
+                                "Fields": [
+                                    {
+                                        "FieldName": "BatchSize",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "ReferenceID",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false
+                                    }
+                                ],
+                                "State": "73917a86-f028-49f2-baa3-7dbb70157077Update GTFSBusPosCtrl SET Status=\"Completed\", BatchId=?BatchSize Where ReferenceID=?ReferenceID;",
+                                "input": {
+                                    "mapping": {
+                                        "parameters": {
+                                            "ReferenceID": "=$activity[GetUUID].output.ReferenceID",
+                                            "BatchSize": "=string.tostring(0)"
+                                        }
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"BatchSize\":{\"type\":\"string\"},\"ReferenceID\":{\"type\":\"string\"}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"BatchSize\":{\"type\":\"string\"},\"ReferenceID\":{\"type\":\"string\"}}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "Output": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"}}}",
+                                        "fe_metadata": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return_Completed",
+                        "name": "Return_Completed",
+                        "description": "Simple Return Activity",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 200,
+                                    "responseBody": {
+                                        "mapping": {
+                                            "body": "*** AutoFixFailedProcess processed Successfully ***"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "errorHandler": {
+                    "tasks": [
+                        {
+                            "id": "LogMessage",
+                            "name": "LogMessage",
+                            "description": "Simple Log Message Activity",
+                            "activity": {
+                                "ref": "#log",
+                                "input": {
+                                    "Log Level": "INFO",
+                                    "flowInfo": false,
+                                    "message": "=$error.message"
+                                }
+                            }
+                        }
+                    ],
+                    "links": []
+                },
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "queryParams",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"debug\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "code",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "responseBody",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"queryParams\":{\"type\":\"object\",\"properties\":{\"debug\":{\"type\":\"string\"}},\"required\":[]}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\",\"required\":false},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}},\"required\":[]}"
+                    }
+                }
+            }
+        },
+        {
+            "id": "flow:AutoArchiveControlTable",
+            "data": {
+                "name": "AutoArchiveControlTable",
+                "description": "",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "CheckIfArchiveNeeded",
+                        "to": "Return_Skipped",
+                        "type": "default"
+                    },
+                    {
+                        "id": 2,
+                        "from": "CheckIfArchiveNeeded",
+                        "to": "MySQLDelete",
+                        "type": "expression",
+                        "label": "ReadyToProceed",
+                        "value": "$activity[CheckIfArchiveNeeded].Output.records[0][\"count(ReferenceID)\"]>0"
+                    },
+                    {
+                        "id": 3,
+                        "from": "MySQLDelete",
+                        "to": "Return_Completed",
+                        "type": "default"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "CheckIfArchiveNeeded",
+                        "name": "CheckIfArchiveNeeded",
+                        "description": "This activity executes query on a MySQL database",
+                        "activity": {
+                            "ref": "#query",
+                            "input": {
+                                "Connection": "conn://df065000-3a11-11eb-b57e-6f1551e16cc8",
+                                "QueryName": "",
+                                "Query": "SELECT count(ReferenceID) FROM GTFSBusPosCtrl WHERE JobDate < subdate(now(), ?daysToArchive);",
+                                "manualmode": false,
+                                "Fields": [
+                                    {
+                                        "FieldName": "daysToArchive",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false
+                                    },
+                                    {
+                                        "FieldName": "count(ReferenceID)",
+                                        "Type": "BIGINT",
+                                        "Selected": true,
+                                        "Parameter": false,
+                                        "isEditable": false
+                                    }
+                                ],
+                                "State": "42619c63-2057-46b2-bb09-74a6ee39fb4bSELECT count(ReferenceID) FROM GTFSBusPosCtrl WHERE JobDate < subdate(now(), ?daysToArchive);",
+                                "input": {
+                                    "mapping": {
+                                        "parameters": {
+                                            "daysToArchive": "=$property[\"daysToArchive\"]"
+                                        }
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"daysToArchive\":{\"type\":\"string\"}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"daysToArchive\":{\"type\":\"string\"}}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "Output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"count(ReferenceID)\":{\"type\":\"integer\"}}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"count(ReferenceID)\":{\"type\":\"integer\"}}}}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return_Skipped",
+                        "name": "Return_Skipped",
+                        "description": "Simple Return Activity",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 201,
+                                    "responseBody": {
+                                        "mapping": {
+                                            "body": "*** Skip ***"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "MySQLDelete",
+                        "name": "MySQLDelete",
+                        "description": "This activity executes delete on a MySQL database",
+                        "activity": {
+                            "ref": "#delete",
+                            "input": {
+                                "Connection": "conn://df065000-3a11-11eb-b57e-6f1551e16cc8",
+                                "DeleteStatement": "DELETE FROM GTFSControlDB.GTFSBusPosCtrl WHERE JobDate < subdate(now(), ?daysToArchive);",
+                                "manualmode": false,
+                                "Fields": [
+                                    {
+                                        "FieldName": "daysToArchive",
+                                        "Type": "VARCHAR",
+                                        "Selected": false,
+                                        "Parameter": true,
+                                        "isEditable": false
+                                    }
+                                ],
+                                "State": "7af7ebca-b9d9-4188-b286-db217758098dDELETE FROM GTFSControlDB.GTFSBusPosCtrl WHERE JobDate < subdate(now(), ?daysToArchive);",
+                                "input": {
+                                    "mapping": {
+                                        "parameters": {
+                                            "daysToArchive": "=$property[\"daysToArchive\"]"
+                                        }
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"daysToArchive\":{\"type\":\"string\"}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"daysToArchive\":{\"type\":\"string\"}}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "Output": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"}}}",
+                                        "fe_metadata": "{\"type\":\"object\",\"properties\":{\"rowsAffected\":{\"type\":\"int\"}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return_Completed",
+                        "name": "Return_Completed",
+                        "description": "Simple Return Activity",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 200,
+                                    "responseBody": {
+                                        "mapping": {
+                                            "body": "=string.concat(\"*** AutoArchiveControlTable Processed Successfully *** Rows Deleted: \",string.tostring($activity[MySQLDelete].Output.rowsAffected))"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "errorHandler": {
+                    "tasks": [
+                        {
+                            "id": "LogMessage",
+                            "name": "LogMessage",
+                            "description": "Simple Log Message Activity",
+                            "activity": {
+                                "ref": "#log",
+                                "input": {
+                                    "Log Level": "INFO",
+                                    "flowInfo": false,
+                                    "message": "=$error.message"
+                                }
+                            }
+                        }
+                    ],
+                    "links": []
+                },
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "queryParams",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"debug\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "code",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "responseBody",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"queryParams\":{\"type\":\"object\",\"properties\":{\"debug\":{\"type\":\"string\"}},\"required\":[]}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\",\"required\":false},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}},\"required\":[]}"
+                    }
+                }
+            }
+        }
+    ],
+    "properties": [
+        {
+            "name": "authProperty",
+            "type": "string",
+            "value": "Basic OmFlMmFkMTkyOWY5NGZmNTA5Mjc5NjAxMzA3MDQxMzRl"
+        },
+        {
+            "name": "authKey",
+            "type": "string",
+            "value": "ae2ad1929f94ff50927960130704134e"
+        },
+        {
+            "name": "tfnswAPIKey",
+            "type": "string",
+            "value": "rLi10wYhQBoTJeQAkLzcSqi0dOFMY4CfgM3f"
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.Host",
+            "type": "string",
+            "value": "mysqltci.cxyssga4hbma.ap-southeast-2.rds.amazonaws.com"
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.Port",
+            "type": "float64",
+            "value": 3306
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.Database_Name",
+            "type": "string",
+            "value": "GTFSControlDB"
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.User",
+            "type": "string",
+            "value": "tibcoadmin"
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.Password",
+            "type": "string",
+            "value": "SECRET:iJqk4NkzbsUdXnf7miYiQ/cr0zCuU8INz2U="
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.Maximum_Open_Connections",
+            "type": "float64",
+            "value": 0
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.Maximum_Idle_Connections",
+            "type": "float64",
+            "value": 2
+        },
+        {
+            "name": "MySQL.cl_GTFSControl.Maximum_Connection_Lifetime",
+            "type": "string",
+            "value": 0
+        },
+        {
+            "name": "daysToArchive",
+            "type": "string",
+            "value": "2"
+        },
+        {
+            "name": "secsToFixProcess",
+            "type": "string",
+            "value": "60"
+        }
+    ],
+    "schemas": {
+        "cl_tfNSW_GTFS": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"message\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"header\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"gtfs_realtime_version\": {\n                            \"type\": \"string\"\n                        },\n                        \"incrementality\": {\n                            \"type\": \"string\"\n                        },\n                        \"timestamp\": {\n                            \"type\": \"string\"\n                        }\n                    }\n                },\n                \"entity\": {\n                    \"type\": \"array\",\n                    \"items\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"id\": {\n                                \"type\": \"string\"\n                            },\n                            \"is_deleted\": {\n                                \"type\": \"null\"\n                            },\n                            \"trip_update\": {\n                                \"type\": \"null\"\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"trip\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"trip_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"route_id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"direction_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"start_time\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"start_date\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"schedule_relationship\": {\n                                                \"type\": \"string\"\n                                            }\n                                        }\n                                    },\n                                    \"vehicle\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"label\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"license_plate\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"tfnsw_vehicle_descriptor\": {\n                                                \"type\": \"null\"\n                                            }\n                                        }\n                                    },\n                                    \"position\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"latitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"longitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"bearing\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"odometer\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"speed\": {\n                                                \"type\": \"number\"\n                                            }\n                                        }\n                                    },\n                                    \"current_stop_sequence\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"stop_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"current_status\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"timestamp\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"congestion_level\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"occupancy_status\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"alert\": {\n                                \"type\": \"null\"\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"message\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"header\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"gtfs_realtime_version\": {\n                            \"type\": \"string\"\n                        },\n                        \"incrementality\": {\n                            \"type\": \"string\"\n                        },\n                        \"timestamp\": {\n                            \"type\": \"string\"\n                        }\n                    }\n                },\n                \"entity\": {\n                    \"type\": \"array\",\n                    \"items\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"id\": {\n                                \"type\": \"string\"\n                            },\n                            \"is_deleted\": {\n                                \"type\": \"null\"\n                            },\n                            \"trip_update\": {\n                                \"type\": \"null\"\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"trip\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"trip_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"route_id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"direction_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"start_time\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"start_date\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"schedule_relationship\": {\n                                                \"type\": \"string\"\n                                            }\n                                        }\n                                    },\n                                    \"vehicle\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"label\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"license_plate\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"tfnsw_vehicle_descriptor\": {\n                                                \"type\": \"null\"\n                                            }\n                                        }\n                                    },\n                                    \"position\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"latitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"longitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"bearing\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"odometer\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"speed\": {\n                                                \"type\": \"number\"\n                                            }\n                                        }\n                                    },\n                                    \"current_stop_sequence\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"stop_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"current_status\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"timestamp\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"congestion_level\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"occupancy_status\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"alert\": {\n                                \"type\": \"null\"\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"timestamp\": {\n                        \"type\": \"string\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"timestamp\": {\n                        \"type\": \"string\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_GTFS_NoHeader": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"alert\": {\n                        \"type\": \"null\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"is_deleted\": {\n                        \"type\": \"null\"\n                    },\n                    \"trip_update\": {\n                        \"type\": \"null\"\n                    },\n                    \"vehicle\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"congestion_level\": {\n                                \"type\": \"string\"\n                            },\n                            \"current_status\": {\n                                \"type\": \"null\"\n                            },\n                            \"current_stop_sequence\": {\n                                \"type\": \"null\"\n                            },\n                            \"occupancy_status\": {\n                                \"type\": \"string\"\n                            },\n                            \"position\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"bearing\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"latitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"longitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"odometer\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"speed\": {\n                                        \"type\": \"number\"\n                                    }\n                                }\n                            },\n                            \"stop_id\": {\n                                \"type\": \"null\"\n                            },\n                            \"timestamp\": {\n                                \"type\": \"string\"\n                            },\n                            \"trip\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"direction_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"route_id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"schedule_relationship\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_date\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_time\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"trip_id\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"label\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"license_plate\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"tfnsw_vehicle_descriptor\": {\n                                        \"type\": \"null\"\n                                    }\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"alert\": {\n                        \"type\": \"null\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"is_deleted\": {\n                        \"type\": \"null\"\n                    },\n                    \"trip_update\": {\n                        \"type\": \"null\"\n                    },\n                    \"vehicle\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"congestion_level\": {\n                                \"type\": \"string\"\n                            },\n                            \"current_status\": {\n                                \"type\": \"null\"\n                            },\n                            \"current_stop_sequence\": {\n                                \"type\": \"null\"\n                            },\n                            \"occupancy_status\": {\n                                \"type\": \"string\"\n                            },\n                            \"position\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"bearing\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"latitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"longitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"odometer\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"speed\": {\n                                        \"type\": \"number\"\n                                    }\n                                }\n                            },\n                            \"stop_id\": {\n                                \"type\": \"null\"\n                            },\n                            \"timestamp\": {\n                                \"type\": \"string\"\n                            },\n                            \"trip\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"direction_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"route_id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"schedule_relationship\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_date\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_time\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"trip_id\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"label\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"license_plate\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"tfnsw_vehicle_descriptor\": {\n                                        \"type\": \"null\"\n                                    }\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed_Single": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"timestamp\": {\n            \"type\": \"string\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"timestamp\": {\n            \"type\": \"string\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Job_Output": {
+            "type": "json",
+            "value": "{\n    \"type\": \"object\",\n    \"title\": \"Inputs\",\n    \"properties\": {\n        \"code\": {\n            \"type\": \"integer\",\n            \"required\": false\n        },\n        \"responseBody\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"batchSize\": {\n                    \"type\": \"integer\"\n                },\n                \"body\": {\n                    \"type\": \"any\"\n                },\n                \"headers\": {\n                    \"type\": \"object\"\n                }\n            }\n        }\n    },\n    \"required\": []\n}",
+            "fe_metadata": "{\n    \"type\": \"object\",\n    \"title\": \"Inputs\",\n    \"properties\": {\n        \"code\": {\n            \"type\": \"integer\",\n            \"required\": false\n        },\n        \"responseBody\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"batchSize\": {\n                    \"type\": \"integer\"\n                },\n                \"body\": {\n                    \"type\": \"any\"\n                },\n                \"headers\": {\n                    \"type\": \"object\"\n                }\n            }\n        }\n    },\n    \"required\": []\n}"
+        }
+    },
+    "connections": {
+        "df065000-3a11-11eb-b57e-6f1551e16cc8": {
+            "id": "df065000-3a11-11eb-b57e-6f1551e16cc8",
+            "name": "cl_GTFSControl",
+            "ref": "#connection",
+            "isGlobal": false,
+            "settings": {
+                "name": "cl_GTFSControl",
+                "description": "",
+                "host": "=$property[\"MySQL.cl_GTFSControl.Host\"]",
+                "port": "=$property[\"MySQL.cl_GTFSControl.Port\"]",
+                "databaseName": "=$property[\"MySQL.cl_GTFSControl.Database_Name\"]",
+                "user": "=$property[\"MySQL.cl_GTFSControl.User\"]",
+                "password": "=$property[\"MySQL.cl_GTFSControl.Password\"]",
+                "maxopenconnection": "=$property[\"MySQL.cl_GTFSControl.Maximum_Open_Connections\"]",
+                "maxidleconnection": "=$property[\"MySQL.cl_GTFSControl.Maximum_Idle_Connections\"]",
+                "connmaxlifetime": "=$property[\"MySQL.cl_GTFSControl.Maximum_Connection_Lifetime\"]",
+                "onprem": false,
+                "tlsconfig": false,
+                "tlsparam": "Required",
+                "cacert": "",
+                "clientcert": "",
+                "clientkey": "",
+                "validatecert": false
+            }
+        }
+    },
+    "contrib": "W3sicmVmIjoiZ2l0LnRpYmNvLmNvbS9naXQvcHJvZHVjdC9pcGFhcy93aS1teXNxbC5naXQvc3JjL2FwcC9NeVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9NeVNRTCJ9LHsicmVmIjoiZ2l0LnRpYmNvLmNvbS9naXQvcHJvZHVjdC9pcGFhcy93aS1jb250cmliLmdpdC9jb250cmlidXRpb25zL0dlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCJ9XQ==",
+    "fe_metadata": "UEsDBAoAAAAIAGMiL1KrqSRGFQAAABMAAAAIAAAAYXBwLmpzb26rViopykxPTy1yy8kvL1ayio6tBQBQSwECFAAKAAAACABjIi9Sq6kkRhUAAAATAAAACAAAAAAAAAAAAAAAAAAAAAAAYXBwLmpzb25QSwUGAAAAAAEAAQA2AAAAOwAAAAAA"
+}

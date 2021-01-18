@@ -1,0 +1,338 @@
+{
+    "imports": [
+        "github.com/project-flogo/flow",
+        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/mapper",
+        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/rest",
+        "github.com/project-flogo/contrib/activity/actreturn",
+        "git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/activity/log",
+        "rest_1 git.tibco.com/git/product/ipaas/wi-contrib.git/contributions/General/trigger/rest",
+        "github.com/project-flogo/contrib/function/array",
+        "github.com/project-flogo/contrib/function/coerce",
+        "github.com/project-flogo/contrib/function/string"
+    ],
+    "name": "cl_Publish_eFTL",
+    "description": "  ",
+    "version": "1.0.0",
+    "type": "flogo:app",
+    "appModel": "1.1.1",
+    "triggers": [
+        {
+            "ref": "#rest_1",
+            "name": "tibco-wi-rest",
+            "description": "Simple REST Trigger",
+            "settings": {
+                "port": 9999,
+                "APISpecUpdate": false,
+                "swagger": "",
+                "swaggerVersion": "v2",
+                "secureConnection": false,
+                "serverKey": "",
+                "caCertificate": ""
+            },
+            "id": "ReceiveHTTPMessage",
+            "handlers": [
+                {
+                    "description": "",
+                    "settings": {
+                        "Method": "POST",
+                        "Path": "/publisheFTL",
+                        "OutputValidation": false
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:Publish2eFTL"
+                        },
+                        "input": {
+                            "body": "=$.body",
+                            "headers": "=$.headers"
+                        },
+                        "output": {
+                            "code": "=$.code",
+                            "message": "=$.message"
+                        }
+                    },
+                    "reply": {
+                        "code": 200,
+                        "configureResponseCodes": false,
+                        "message": {}
+                    },
+                    "schemas": {
+                        "reply": {
+                            "responseBody": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+                            }
+                        },
+                        "output": {
+                            "headers": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                            },
+                            "body": "schema://cl_tfNSW_Transformed_with_matcher"
+                        }
+                    },
+                    "name": "Publish2eFTL"
+                }
+            ]
+        }
+    ],
+    "resources": [
+        {
+            "id": "flow:Publish2eFTL",
+            "data": {
+                "name": "Publish2eFTL",
+                "description": "",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "FixforDataStream",
+                        "to": "publisheFTL",
+                        "type": "default"
+                    },
+                    {
+                        "id": 2,
+                        "from": "publisheFTL",
+                        "to": "Return",
+                        "type": "default"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "FixforDataStream",
+                        "name": "FixforDataStream",
+                        "description": "Mapper Activity",
+                        "activity": {
+                            "ref": "#mapper",
+                            "input": {
+                                "input": {
+                                    "mapping": {
+                                        "respMsg": {
+                                            "@foreach($flow.body.respMsg, respMsg)": {
+                                                "a_matcher": "=$loop.a_matcher",
+                                                "bearing": "=$loop.bearing",
+                                                "congestion_level": "=$loop.congestion_level",
+                                                "id": "=$loop.id",
+                                                "latitude": "=$loop.latitude",
+                                                "longitude": "=$loop.longitude",
+                                                "occupancy_status": "=$loop.occupancy_status",
+                                                "route_id": "=$loop.route_id",
+                                                "schedule_relationship": "=$loop.schedule_relationship",
+                                                "speed": "=$loop.speed",
+                                                "start_date": "=$loop.start_date",
+                                                "start_time": "=$loop.start_time",
+                                                "vehicletimestamp": "=coerce.toInt($loop.timestamp)",
+                                                "trip_id": "=$loop.trip_id"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": "schema://cl_tfNSW_Transformed_with_matcher_fix"
+                                },
+                                "output": {
+                                    "output": {
+                                        "type": "json",
+                                        "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"respMsg\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"a_matcher\": {\n            \"type\": \"string\"\n          },\n          \"bearing\": {\n            \"type\": \"number\"\n          },\n          \"congestion_level\": {\n            \"type\": \"string\"\n          },\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"latitude\": {\n            \"type\": \"number\"\n          },\n          \"longitude\": {\n            \"type\": \"number\"\n          },\n          \"occupancy_status\": {\n            \"type\": \"string\"\n          },\n          \"route_id\": {\n            \"type\": \"string\"\n          },\n          \"schedule_relationship\": {\n            \"type\": \"string\"\n          },\n          \"speed\": {\n            \"type\": \"number\"\n          },\n          \"start_date\": {\n            \"type\": \"string\"\n          },\n          \"start_time\": {\n            \"type\": \"string\"\n          },\n          \"vehicletimestamp\": {\n            \"type\": \"number\"\n          },\n          \"trip_id\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                                        "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"respMsg\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"a_matcher\": {\n            \"type\": \"string\"\n          },\n          \"bearing\": {\n            \"type\": \"number\"\n          },\n          \"congestion_level\": {\n            \"type\": \"string\"\n          },\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"latitude\": {\n            \"type\": \"number\"\n          },\n          \"longitude\": {\n            \"type\": \"number\"\n          },\n          \"occupancy_status\": {\n            \"type\": \"string\"\n          },\n          \"route_id\": {\n            \"type\": \"string\"\n          },\n          \"schedule_relationship\": {\n            \"type\": \"string\"\n          },\n          \"speed\": {\n            \"type\": \"number\"\n          },\n          \"start_date\": {\n            \"type\": \"string\"\n          },\n          \"start_time\": {\n            \"type\": \"string\"\n          },\n          \"vehicletimestamp\": {\n            \"type\": \"number\"\n          },\n          \"trip_id\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "publisheFTL",
+                        "name": "publisheFTL",
+                        "description": "Simple REST Activity",
+                        "type": "iterator",
+                        "settings": {
+                            "iterate": "=$activity[FixforDataStream].output.respMsg",
+                            "accumulate": false,
+                            "retryOnError": {
+                                "count": 0,
+                                "interval": 0
+                            }
+                        },
+                        "activity": {
+                            "ref": "#rest",
+                            "input": {
+                                "enableASR": false,
+                                "swagger": "",
+                                "serviceName": "",
+                                "resourcePath": "",
+                                "Method": "POST",
+                                "Uri": "https://01bqkjthy80gxznysxp69d91t2-apps.au.messaging.cloud.tibco.com/channel/v1/publish",
+                                "Timeout": 0,
+                                "requestType": "application/json",
+                                "Use certificate for verification": false,
+                                "Server Certificate": "",
+                                "proxy": "",
+                                "host": "",
+                                "headers": {
+                                    "mapping": {
+                                        "Authorization": "=string.concat(\"Basic \", string.stringToBase64(string.concat(\":\",$property[\"authKey\"])))"
+                                    }
+                                },
+                                "body": "=$iteration[value]"
+                            },
+                            "output": {
+                                "configureResponseCodes": false,
+                                "responseType": "application/json"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Authorization\":{\"type\":\"string\"},\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[\"Authorization\"]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"\",\"required\":\"true\"},{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "body": "schema://cl_tfNSW_Transformed_Single_with_matcher_fix"
+                                },
+                                "output": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return",
+                        "name": "Return",
+                        "description": "Simple Return Activity",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 200,
+                                    "message": "Message published successfully completed"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "errorHandler": {
+                    "tasks": [
+                        {
+                            "id": "LogMessage",
+                            "name": "LogMessage",
+                            "description": "Simple Log Message Activity",
+                            "activity": {
+                                "ref": "#log",
+                                "input": {
+                                    "Log Level": "INFO",
+                                    "flowInfo": false,
+                                    "message": "=$error.message"
+                                }
+                            }
+                        }
+                    ],
+                    "links": []
+                },
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "headers",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}}"
+                            }
+                        },
+                        {
+                            "name": "body",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"respMsg\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"a_matcher\":{\"type\":\"string\"},\"bearing\":{\"type\":\"number\"},\"congestion_level\":{\"type\":\"string\"},\"id\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"occupancy_status\":{\"type\":\"string\"},\"route_id\":{\"type\":\"string\"},\"schedule_relationship\":{\"type\":\"string\"},\"speed\":{\"type\":\"number\"},\"start_date\":{\"type\":\"string\"},\"start_time\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"string\"},\"trip_id\":{\"type\":\"string\"}}}}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "code",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "message",
+                            "type": "string"
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"body\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"respMsg\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"a_matcher\":{\"type\":\"string\"},\"bearing\":{\"type\":\"number\"},\"congestion_level\":{\"type\":\"string\"},\"id\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"occupancy_status\":{\"type\":\"string\"},\"route_id\":{\"type\":\"string\"},\"schedule_relationship\":{\"type\":\"string\"},\"speed\":{\"type\":\"number\"},\"start_date\":{\"type\":\"string\"},\"start_time\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"string\"},\"trip_id\":{\"type\":\"string\"}}}}}}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\",\"required\":false},\"message\":{\"type\":\"string\",\"required\":false}},\"required\":[]}"
+                    }
+                },
+                "explicitReply": true
+            }
+        }
+    ],
+    "properties": [
+        {
+            "name": "authProperty",
+            "type": "string",
+            "value": "Basic OmFlMmFkMTkyOWY5NGZmNTA5Mjc5NjAxMzA3MDQxMzRl"
+        },
+        {
+            "name": "authKey",
+            "type": "string",
+            "value": "ae2ad1929f94ff50927960130704134e"
+        },
+        {
+            "name": "tfnswAPIKey",
+            "type": "string",
+            "value": "rLi10wYhQBoTJeQAkLzcSqi0dOFMY4CfgM3f"
+        }
+    ],
+    "schemas": {
+        "cl_tfNSW_GTFS": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"message\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"header\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"gtfs_realtime_version\": {\n                            \"type\": \"string\"\n                        },\n                        \"incrementality\": {\n                            \"type\": \"string\"\n                        },\n                        \"timestamp\": {\n                            \"type\": \"string\"\n                        }\n                    }\n                },\n                \"entity\": {\n                    \"type\": \"array\",\n                    \"items\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"id\": {\n                                \"type\": \"string\"\n                            },\n                            \"is_deleted\": {\n                                \"type\": \"null\"\n                            },\n                            \"trip_update\": {\n                                \"type\": \"null\"\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"trip\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"trip_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"route_id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"direction_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"start_time\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"start_date\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"schedule_relationship\": {\n                                                \"type\": \"string\"\n                                            }\n                                        }\n                                    },\n                                    \"vehicle\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"label\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"license_plate\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"tfnsw_vehicle_descriptor\": {\n                                                \"type\": \"null\"\n                                            }\n                                        }\n                                    },\n                                    \"position\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"latitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"longitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"bearing\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"odometer\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"speed\": {\n                                                \"type\": \"number\"\n                                            }\n                                        }\n                                    },\n                                    \"current_stop_sequence\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"stop_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"current_status\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"timestamp\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"congestion_level\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"occupancy_status\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"alert\": {\n                                \"type\": \"null\"\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"message\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"header\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"gtfs_realtime_version\": {\n                            \"type\": \"string\"\n                        },\n                        \"incrementality\": {\n                            \"type\": \"string\"\n                        },\n                        \"timestamp\": {\n                            \"type\": \"string\"\n                        }\n                    }\n                },\n                \"entity\": {\n                    \"type\": \"array\",\n                    \"items\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"id\": {\n                                \"type\": \"string\"\n                            },\n                            \"is_deleted\": {\n                                \"type\": \"null\"\n                            },\n                            \"trip_update\": {\n                                \"type\": \"null\"\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"trip\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"trip_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"route_id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"direction_id\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"start_time\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"start_date\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"schedule_relationship\": {\n                                                \"type\": \"string\"\n                                            }\n                                        }\n                                    },\n                                    \"vehicle\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"id\": {\n                                                \"type\": \"string\"\n                                            },\n                                            \"label\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"license_plate\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"tfnsw_vehicle_descriptor\": {\n                                                \"type\": \"null\"\n                                            }\n                                        }\n                                    },\n                                    \"position\": {\n                                        \"type\": \"object\",\n                                        \"properties\": {\n                                            \"latitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"longitude\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"bearing\": {\n                                                \"type\": \"number\"\n                                            },\n                                            \"odometer\": {\n                                                \"type\": \"null\"\n                                            },\n                                            \"speed\": {\n                                                \"type\": \"number\"\n                                            }\n                                        }\n                                    },\n                                    \"current_stop_sequence\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"stop_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"current_status\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"timestamp\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"congestion_level\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"occupancy_status\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"alert\": {\n                                \"type\": \"null\"\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"timestamp\": {\n                        \"type\": \"string\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"timestamp\": {\n                        \"type\": \"string\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_GTFS_NoHeader": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"alert\": {\n                        \"type\": \"null\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"is_deleted\": {\n                        \"type\": \"null\"\n                    },\n                    \"trip_update\": {\n                        \"type\": \"null\"\n                    },\n                    \"vehicle\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"congestion_level\": {\n                                \"type\": \"string\"\n                            },\n                            \"current_status\": {\n                                \"type\": \"null\"\n                            },\n                            \"current_stop_sequence\": {\n                                \"type\": \"null\"\n                            },\n                            \"occupancy_status\": {\n                                \"type\": \"string\"\n                            },\n                            \"position\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"bearing\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"latitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"longitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"odometer\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"speed\": {\n                                        \"type\": \"number\"\n                                    }\n                                }\n                            },\n                            \"stop_id\": {\n                                \"type\": \"null\"\n                            },\n                            \"timestamp\": {\n                                \"type\": \"string\"\n                            },\n                            \"trip\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"direction_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"route_id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"schedule_relationship\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_date\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_time\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"trip_id\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"label\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"license_plate\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"tfnsw_vehicle_descriptor\": {\n                                        \"type\": \"null\"\n                                    }\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"alert\": {\n                        \"type\": \"null\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"is_deleted\": {\n                        \"type\": \"null\"\n                    },\n                    \"trip_update\": {\n                        \"type\": \"null\"\n                    },\n                    \"vehicle\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"congestion_level\": {\n                                \"type\": \"string\"\n                            },\n                            \"current_status\": {\n                                \"type\": \"null\"\n                            },\n                            \"current_stop_sequence\": {\n                                \"type\": \"null\"\n                            },\n                            \"occupancy_status\": {\n                                \"type\": \"string\"\n                            },\n                            \"position\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"bearing\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"latitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"longitude\": {\n                                        \"type\": \"number\"\n                                    },\n                                    \"odometer\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"speed\": {\n                                        \"type\": \"number\"\n                                    }\n                                }\n                            },\n                            \"stop_id\": {\n                                \"type\": \"null\"\n                            },\n                            \"timestamp\": {\n                                \"type\": \"string\"\n                            },\n                            \"trip\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"direction_id\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"route_id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"schedule_relationship\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_date\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"start_time\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"trip_id\": {\n                                        \"type\": \"string\"\n                                    }\n                                }\n                            },\n                            \"vehicle\": {\n                                \"type\": \"object\",\n                                \"properties\": {\n                                    \"id\": {\n                                        \"type\": \"string\"\n                                    },\n                                    \"label\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"license_plate\": {\n                                        \"type\": \"null\"\n                                    },\n                                    \"tfnsw_vehicle_descriptor\": {\n                                        \"type\": \"null\"\n                                    }\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed_Single": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"timestamp\": {\n            \"type\": \"string\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"timestamp\": {\n            \"type\": \"string\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed_with_matcher": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"a_matcher\":{\n                      \"type\": \"string\"  \n                    },\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"timestamp\": {\n                        \"type\": \"string\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"a_matcher\":{\n                      \"type\": \"string\"  \n                    },\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"timestamp\": {\n                        \"type\": \"string\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed_Single_with_matcher": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"a_matcher\":{\n          \"type\": \"string\"  \n        },\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"timestamp\": {\n            \"type\": \"string\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"a_matcher\":{\n          \"type\": \"string\"  \n        },\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"timestamp\": {\n            \"type\": \"string\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed_with_matcher_fix": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"a_matcher\":{\n                      \"type\": \"string\"  \n                    },\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"vehicletimestamp\": {\n                        \"type\": \"number\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"respMsg\": {\n            \"type\": \"array\",\n            \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"a_matcher\":{\n                      \"type\": \"string\"  \n                    },\n                    \"bearing\": {\n                        \"type\": \"number\"\n                    },\n                    \"congestion_level\": {\n                        \"type\": \"string\"\n                    },\n                    \"id\": {\n                        \"type\": \"string\"\n                    },\n                    \"latitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"longitude\": {\n                        \"type\": \"number\"\n                    },\n                    \"occupancy_status\": {\n                        \"type\": \"string\"\n                    },\n                    \"route_id\": {\n                        \"type\": \"string\"\n                    },\n                    \"schedule_relationship\": {\n                        \"type\": \"string\"\n                    },\n                    \"speed\": {\n                        \"type\": \"number\"\n                    },\n                    \"start_date\": {\n                        \"type\": \"string\"\n                    },\n                    \"start_time\": {\n                        \"type\": \"string\"\n                    },\n                    \"vehicletimestamp\": {\n                        \"type\": \"number\"\n                    },\n                    \"trip_id\": {\n                        \"type\": \"string\"\n                    }\n                }\n            }\n        }\n    }\n}"
+        },
+        "cl_tfNSW_Transformed_Single_with_matcher_fix": {
+            "type": "json",
+            "value": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"a_matcher\":{\n          \"type\": \"string\"  \n        },\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"vehicletimestamp\": {\n            \"type\": \"number\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}",
+            "fe_metadata": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"type\": \"object\",\n    \"properties\": {\n        \"a_matcher\":{\n          \"type\": \"string\"  \n        },\n        \"bearing\": {\n            \"type\": \"number\"\n        },\n        \"congestion_level\": {\n            \"type\": \"string\"\n        },\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"latitude\": {\n            \"type\": \"number\"\n        },\n        \"longitude\": {\n            \"type\": \"number\"\n        },\n        \"occupancy_status\": {\n            \"type\": \"string\"\n        },\n        \"route_id\": {\n            \"type\": \"string\"\n        },\n        \"schedule_relationship\": {\n            \"type\": \"string\"\n        },\n        \"speed\": {\n            \"type\": \"number\"\n        },\n        \"start_date\": {\n            \"type\": \"string\"\n        },\n        \"start_time\": {\n            \"type\": \"string\"\n        },\n        \"vehicletimestamp\": {\n            \"type\": \"number\"\n        },\n        \"trip_id\": {\n            \"type\": \"string\"\n        }\n    }\n}"
+        }
+    },
+    "connections": {},
+    "contrib": "W3sicmVmIjoiZ2l0LnRpYmNvLmNvbS9naXQvcHJvZHVjdC9pcGFhcy93aS1jb250cmliLmdpdC9jb250cmlidXRpb25zL0dlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCJ9XQ==",
+    "fe_metadata": "UEsDBAoAAAAIAKohL1KrqSRGFQAAABMAAAAIAAAAYXBwLmpzb26rViopykxPTy1yy8kvL1ayio6tBQBQSwECFAAKAAAACACqIS9Sq6kkRhUAAAATAAAACAAAAAAAAAAAAAAAAAAAAAAAYXBwLmpzb25QSwUGAAAAAAEAAQA2AAAAOwAAAAAA"
+}
