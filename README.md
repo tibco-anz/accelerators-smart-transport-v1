@@ -130,6 +130,9 @@ TIBCO Cloud Data Streams brings the power of real-time analytics to the cloud. I
 ## TIBCO Cloud Spotfire
 This data table can be connected seamlessly to Spotfire analytics to create visualisations. In TIBCO Cloud Spotfire, you can view this data stream alongside historical data or other streaming data, create aggregations, and even apply data science.
 
+## Installation and Configuration
+Refer to [Installation](WORKSHOP.md)
+
 License
 ----
 MIT
