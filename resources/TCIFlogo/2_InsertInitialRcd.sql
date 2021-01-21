@@ -1,0 +1,1 @@
+insert into GTFSControlDB.GTFSBusPosCtrl (BatchId, Status) values (2,"Started") where ReferenceID="'b6dbc99c-9414-4704-8d71-2575b955c081'";
