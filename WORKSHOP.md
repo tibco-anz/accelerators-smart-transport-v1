@@ -7,6 +7,8 @@ Date: December 2020
 
 
 ## Installation and configuration
+
+### Configure TIBCO Cloud Integration
 #### Download this github respository to your local file system
 [Real-Time Public Transport Accelerator-Cloud Version](https://github.com/tibco-anz/gtfsSydBusAccelerator)
 
@@ -19,8 +21,7 @@ Date: December 2020
   - Under Connector Management & Extensions section, Select **Extensions**.
   - Under Extensions, Select the orange **Upload** button.
   - In the dialog box, select "Browse from file system".
-  - In the file dialog box,
-** , enter https://github.com/tibco-anz/gtfsSydBusAccelerator/edit/main/resources/TCI-flogo/cl_util.zip and select **Import** button
+  - In the file dialog box, enter https://github.com/tibco-anz/gtfsSydBusAccelerator/edit/main/resources/TCI-flogo/cl_util.zip and select **Import** button
   - Click the **Done** button to complete import.
 
   ![Flogo Extension](./images/FlogoExtension.png)
@@ -88,7 +89,6 @@ Start eFTL server if it is not running
 
 
 ### Configure TIBCO Cloud Data Streams
-</br>
 
 ##### Sign up for TIBCO Cloud Data Streams trial
 
