@@ -1,10 +1,12 @@
 
 TIBCO ANZ Solution Engineering
 
-Date: December 2020
+Created: December 2020
+Last Updated: August 2021
 
 [![N|Solid](https://docs.tibco.com/pub/businessevents-standard/5.4.0/doc/html/static/logo.png)](https://tibco.com)
 
+Public TIBCO Community Link: https://community.tibco.com/wiki/smart-transport-accelerator
 Salck Channel: #anz-accelerator-realtime-public-transport-cloud
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://github.com/tibco-anz/gtfsSydBusAccelerator)
