@@ -10,7 +10,7 @@ Date: December 2020
 
 ### Configure TIBCO Cloud Integration
 #### Download this github respository to your local file system
-[Real-Time Public Transport Accelerator-Cloud Version](https://github.com/tibco-anz/gtfsSydBusAccelerator)
+[Real-Time Public Transport Accelerator-Cloud Version](https://github.com/tibco-anz/accelerators-smart-transport-v1)
 
 #### Install Flogo extension
   - Login to TIBCO Cloud (https://cloud.tibco.com/) (sign up trial option is also avaialble).
