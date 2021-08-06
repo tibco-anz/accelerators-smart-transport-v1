@@ -21,7 +21,7 @@ Date: December 2020
   - Under Connector Management & Extensions section, Select **Extensions**.
   - Under Extensions, Select the orange **Upload** button.
   - In the dialog box, select "Browse from file system".
-  - In the file dialog box, enter https://github.com/tibco-anz/gtfsSydBusAccelerator/edit/main/resources/TCI-flogo/cl_util.zip and select **Import** button
+  - In the file dialog box, enter https://github.com/tibco-anz/accelerators-smart-transport-v1/edit/main/resources/TCI-flogo/cl_util.zip and select **Import** button
   - Click the **Done** button to complete import.
 
   ![Flogo Extension](./images/FlogoExtension.png)
@@ -69,9 +69,9 @@ Example:
     - Select the **Upload** button.
     - Ignore the warning message and select **Done**
   - Import **cl_SydBusDemo_PublishGTFS** app
-    - Repeat the above steps and select "../gtfsSydBusAccelerator/resources/cl_SydBusDemo_PublishGTFS.json".
+    - Repeat the above steps and select "../accelerators-smart-transport-v1/resources/cl_SydBusDemo_PublishGTFS.json".
   - Import **cl_SydBusDemo_Run** app
-    - Repeat the above steps and select "../gtfsSydBusAccelerator/resources/cl_SydBusDemo_Run.json".
+    - Repeat the above steps and select "../accelerators-smart-transport-v1/resources/cl_SydBusDemo_Run.json".
     
 **Notes**:
 The following tasks will be required to ensure end to end process will be running successfully in your environment:
